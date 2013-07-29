@@ -1,10 +1,10 @@
-include <avr/io.h>
+#include <avr/io.h>
 #define _SFR_ASM_COMPAT 1
 
 .global LongSyncPulseS
 LongSyncPulseS:
 	; Disable sync pin
-	cbi PORTB, 2						; 2
+	cbi _SFR_IO_ADDR(PORTB), 2						; 2
 
 	; Set the CTC value to 750 cycles
 	ldi r31, hi8(750)					; 3
@@ -23,7 +23,7 @@ LongSyncPulseS:
 .global LongSyncDelayS
 LongSyncDelayS:
 	; Enable sync pin
-	sbi PORTB, 2						; 2
+	sbi _SFR_IO_ADDR(PORTB), 2						; 2
 
 	; Set the CTC value to 50 cycles
 	ldi r31, hi8(50)						; 3
@@ -78,7 +78,7 @@ _LSD1:
 .global ShortSyncPostPulseS
 ShortSyncPostPulseS:
 	; Disable sync pin
-	cbi PORTB, 2						; 2
+	cbi _SFR_IO_ADDR(PORTB), 2						; 2
 
 	; Set the CTC value to 50 cycles
 	ldi r31, hi8(50)						; 3
@@ -97,7 +97,7 @@ ShortSyncPostPulseS:
 .global ShortSyncPostDelayS
 ShortSyncPostDelayS:
 	; Enable sync pin
-	sbi PORTB, 2						; 2
+	sbi _SFR_IO_ADDR(PORTB), 2						; 2
 
 	; Set the CTC value to 750 cycles
 	ldi r31, hi8(750)					; 3
@@ -139,8 +139,8 @@ _SSPD1:
 .global HSyncPulseS
 HSyncPulseS:
 	; Disable sync- and vid pin
-	cbi PORTB, 3						; 2
-	cbi PORTB, 2						; 4
+	cbi _SFR_IO_ADDR(PORTB), 3						; 2
+	cbi _SFR_IO_ADDR(PORTB), 2						; 4
 
 	; Set the CTC value to 100 cycles
 	ldi r31, hi8(100)					; 5
@@ -159,7 +159,7 @@ HSyncPulseS:
 .global BackPorchS
 BackPorchS:
 	; Enable sync pin
-	sbi PORTB, 2						; 2
+	sbi _SFR_IO_ADDR(PORTB), 2						; 2
 
 	; Set the CTC value to 200 cycles
 	ldi r31, hi8(200)					; 3
