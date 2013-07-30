@@ -1,10 +1,69 @@
 #include <avr/io.h>
 #define _SFR_ASM_COMPAT 1
 
+.global scanline
+.lcomm scanline, 2
+
+.global syncsleft
+.lcomm syncsleft, 1
+
+.global field
+.lcomm field, 1
+
+.global int_func
+.lcomm int_func, 2
+
+.global IntInitS
+IntInitS:
+	; Set int_func to LongSyncPulseS
+	ldi r31, hi8(LongSyncPulseS)
+	ldi r30, lo8(LongSyncPulseS)
+	sts int_func, r30
+	sts int_func+1, r31
+
+	; Set syncs left to 5
+	ldi r30, 5
+	sts syncsleft, r30
+
+	; Clear field
+	clr r30
+	sts field, r30
+
+	; Clear scanline
+	sts scanline, r30
+	sts scanline+1, r30
+
+	ret
+
+.global TIMER1_COMPA_vect
+TIMER1_COMPA_vect:
+	; Put SREG in r1 (__zero_register__), making sure to clr it afterwards!
+	in r1, _SFR_IO_ADDR(SREG)				; 1	
+
+	; Save r29 through r31
+	push r31						; 3
+	push r30						; 5
+
+	; Call the correct interrupt
+	ldi r30, lo8(int_func)					; 6
+	ldi r31, hi8(int_func)					; 7
+	icall							; 10
+
+	; Put r29 through r31 back
+	pop r30							; 13
+	pop r31							; 15
+
+	; Put SREG back
+	out _SFR_IO_ADDR(SREG), r1				; 16
+	clr r1							; 17
+
+	; Return
+	reti							; 21
+
 .global LongSyncPulseS
 LongSyncPulseS:
 	; Disable sync pin
-	cbi _SFR_IO_ADDR(PORTB), 2						; 2
+	cbi _SFR_IO_ADDR(PORTB), 2				; 2
 
 	; Set the CTC value to 750 cycles
 	ldi r31, hi8(750)					; 3
@@ -22,12 +81,15 @@ LongSyncPulseS:
 
 .global LongSyncDelayS
 LongSyncDelayS:
-	; Enable sync pin
-	sbi _SFR_IO_ADDR(PORTB), 2						; 2
+	; Store r29
+	push r29
 
-	; Set the CTC value to 50 cycles
-	ldi r31, hi8(50)						; 3
-	ldi r30, lo8(50)						; 4
+	; Enable sync pin
+	sbi _SFR_IO_ADDR(PORTB), 2				; 2
+
+	; Set the CTC value to 50 cycle
+	ldi r31, hi8(50)					; 3
+	ldi r30, lo8(50)					; 4
 	sts OCR1AH, r31						; 6
 	sts OCR1AL, r30						; 8
 	
@@ -51,6 +113,8 @@ LongSyncDelayS:
 	sts int_func, r30					; 20
 	sts int_func+1, r31					; 22
 
+	pop r29
+
 	ret							; 26
 
 _LSD1:
@@ -71,7 +135,9 @@ _LSD1:
 	ldi r31, hi8(ShortSyncPostPulseS)			;	26
 	ldi r30, lo8(ShortSyncPostPulseS)			;	27
 	sts int_func, r30					;	29
-	sts int_func+1, r30					;	31
+	sts int_func+1, r31					;	31
+
+	pop r29
 
 	ret							;	35
 
@@ -97,7 +163,10 @@ ShortSyncPostPulseS:
 .global ShortSyncPostDelayS
 ShortSyncPostDelayS:
 	; Enable sync pin
-	sbi _SFR_IO_ADDR(PORTB), 2						; 2
+	sbi _SFR_IO_ADDR(PORTB), 2				; 2
+
+	; Save r29
+	push r29
 
 	; Set the CTC value to 750 cycles
 	ldi r31, hi8(750)					; 3
@@ -115,6 +184,8 @@ ShortSyncPostDelayS:
 
 	; Store syncsleft back
 	st Z, r29						; 15
+
+	pop r29
 
 	; If it's 0, skip ahead to SSPD1
 	brne _SSPD1						; 16	17
@@ -177,4 +248,6 @@ BackPorchS:
 
 .global ImageDataS
 ImageDataS:
+
+	ret
 

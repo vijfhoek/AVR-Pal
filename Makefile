@@ -1,7 +1,7 @@
 all: compile flash
 
 compile:
-	avr-gcc pal.c pal.S -o out.elf -g -mmcu=atmega328p -O2 -Wl,--undefined=_mmcu,--section-start=.mmcu=0x1000 
+	avr-gcc pal.S pal.c -o out.elf -g -mmcu=atmega328p -O2 -Wl,--undefined=_mmcu,--section-start=.mmcu=0x1500 
 	avr-objcopy -I ihex out.elf out.hex
 
 listing:
