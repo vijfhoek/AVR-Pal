@@ -34,10 +34,6 @@ void ImageDataS(void);
 void ShortSyncPrePulseS(void);
 void ShortSyncPreDelayS(void);
 
-extern uint16_t scanline;
-extern uint8_t syncsleft;
-extern uint8_t field; // 0 if odd (313 lines), 1 if even (312 lines)
-
 int main(void) {
         int i;
 
